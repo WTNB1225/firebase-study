@@ -1,40 +1,151 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
+
+<head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="assessment.css">
     <title>あなたのいいところ診断</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
         // TODO: Add SDKs for Firebase products that you want to use
         // https://firebase.google.com/docs/web/setup#available-libraries
-      
+
         // Your web app's Firebase configuration
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
-          apiKey: "AIzaSyB18_4b4yEyDHoS1JSItJIG24TxTWx9cVk",
-          authDomain: "fir-study-a0ba7.firebaseapp.com",
-          projectId: "fir-study-a0ba7",
-          storageBucket: "fir-study-a0ba7.appspot.com",
-          messagingSenderId: "909258885163",
-          appId: "1:909258885163:web:4265316128f74fdd58c26e",
-          measurementId: "G-HKCG8YM391"
+            apiKey: "AIzaSyB18_4b4yEyDHoS1JSItJIG24TxTWx9cVk",
+            authDomain: "fir-study-a0ba7.firebaseapp.com",
+            projectId: "fir-study-a0ba7",
+            storageBucket: "fir-study-a0ba7.appspot.com",
+            messagingSenderId: "909258885163",
+            appId: "1:909258885163:web:4265316128f74fdd58c26e",
+            measurementId: "G-HKCG8YM391"
         };
-      
+
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
-      </script>
+        const auth = getAuth();
+
+        // ログイン周りの処理の各エリア
+        const userArea = document.getElementById('user-area');
+        const loginArea = document.getElementById('login-area');
+        const registerArea = document.getElementById('register-area');
+
+
+        // 新規会員登録処理
+        const registerForm = document.getElementById('register-form');
+        const registerMailAddressInput = document.getElementById('registerMailAddress');
+        const registerPasswordInput = document.getElementById('registerPassword');
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const mailAddress = registerMailAddressInput.value;
+            const password = registerPasswordInput.value;
+            if (!mailAddress || !password) {
+                return;
+            }
+            createUserWithEmailAndPassword(auth, mailAddress, password)
+                .then(() => {
+                    // 新規会員登録フォームを初期化
+                    registerMailAddressInput.value = '';
+                    registerPasswordInput.value = '';
+                })
+                .catch((error) => {
+                    alert('登録に失敗しました[' + error.message + ']');
+                });
+        });
+
+        //認証情報の変更を画面に反映する
+        onAuthStateChanged(auth, (user) => {
+            const userEmailText = document.getElementById('user-email-text');
+            userArea.style.display = 'none';
+            loginArea.style.display = 'none';
+            registerArea.style.display = 'none';
+            if (user) {
+                userEmailText.textContent = user.email;
+                userArea.style.display = 'block';
+            } else {
+                userEmailText.textContent = '';
+                loginArea.style.display = 'block';
+                registerArea.style.display = 'block';
+            }
+        });
+
+        const logoutButton = document.getElementById('logoutButton');
+        logoutButton.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        const loginForm = document.getElementById('login-form');
+        const mailAddressInput = document.getElementById('mailAddress');
+        const passwordInput = document.getElementById('password');
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const mailAddress = mailAddressInput.value;
+            const password = passwordInput.value;
+            if (!mailAddress || !password) {
+                return;
+            }
+            signInWithEmailAndPassword(auth, mailAddress, password)
+                .then(() => {
+                    // ログインフォームを初期化
+                    mailAddressInput.value = '';
+                    passwordInput.value = '';
+                })
+                .catch((error) => {
+                    alert('ログインに失敗しました[' + error.message + ']');
+                });
+        });
+
+    </script>
     <h1>あなたのいいところは?</h1>
     <p>診断したい名前を入れて下さい</p>
     <input type="text" id="user-name" size="40" maxlength="20">
     <button id="assessment">診断する</button>
     <div id="result-area"></div>
     <div id="tweet-area"></div>
-    <script src="assessment.js"></script>
-  </body>
+    <div id="user-area"></div>
+    <hr />
+    ようこそ <span id="user-email-text"></span> さん
+    <button id="logoutButton">ログアウト</button>
+    </div>
+    <div id="login-area">
+        <hr />
+        <h2>ログイン</h2>
+        <form action="#" id="login-form">
+            <div>
+                メールアドレス<input id="mailAddress" type="email" size="40" required />
+            </div>
+            <div>
+                パスワード<input id="password" type="password" size="40" required />
+            </div>
+            <p>
+                <button type="submit">ログイン</button>
+            </p>
+        </form>
+    </div>
+    <div id="register-area">
+        <hr />
+        <h2>新規会員登録</h2>
+        <form action="#" id="register-form">
+            <div>
+                メールアドレス<input id="registerMailAddress" type="email" size="40" required />
+            </div>
+            <div>
+                パスワード<input id="registerPassword" type="password" size="40" required />
+            </div>
+            <p>
+                <button type="submit">新規会員登録</button>
+            </p>
+        </form>
+    </div>
+    <script src="./assesment.js"></script>
+</body>
+
 </html>
